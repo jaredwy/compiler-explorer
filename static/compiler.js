@@ -78,7 +78,6 @@ define(function (require) {
         this.decorations = {};
         this.prevDecorations = [];
         this.optButton = this.domRoot.find('.btn.view-optimization');
-
         this.linkedFadeTimeoutId = -1;
 
         this.domRoot.find(".compiler-picker").selectize({
@@ -94,7 +93,8 @@ define(function (require) {
         var optionsChange = _.debounce(function () {
             self.onOptionsChange($(this).val());
         }, 800);
-        this.domRoot.find(".options")
+        this.optionsField = this.domRoot.find(".options");
+        this.optionsField 
             .val(this.options)
             .on("change", optionsChange)
             .on("keyup", optionsChange);
@@ -237,6 +237,12 @@ define(function (require) {
             this.optButton, createOptView.bind(this));
 
         this.optButton.click(_.bind(function () {
+            var currentOptions = this.optionsField.val();
+            if(currentOptions.indexOf(this.compiler.optArg) === -1) {
+                currentOptions += " " + this.compiler.optArg;
+                this.optionsField.val(currentOptions);
+                this.optionsField.change();
+            }
             var insertPoint = hub.findParentRowOrColumn(this.container) ||
                 this.container.layoutManager.root.contentItems[0];
             insertPoint.addChild(createOptView());
@@ -427,7 +433,6 @@ define(function (require) {
         status.toggleClass('error', failed);
         status.toggleClass('warning', warns);
         status.parent().attr('title', allText);
-        this.optButton.prop("disabled", !result.hasOptOutput);
         var compileTime = this.domRoot.find('.compile-time');
         if (cached) {
             compileTime.text("- cached");
@@ -482,7 +487,7 @@ define(function (require) {
 
     Compiler.prototype.onOptViewClosed = function (id) {
         if (this.id == id) {
-            this.optButton.prop('disabled', false);
+            this.optButton.prop("disabled", false);
         }
     };
 
@@ -499,6 +504,7 @@ define(function (require) {
         // Disable any of the options which don't make sense in binary mode.
         var filtersDisabled = !!filters.binary && !this.compiler.supportsFiltersInBinary;
         this.domRoot.find('.nonbinary').toggleClass("disabled", filtersDisabled);
+        this.optButton.prop("disabled", !this.compiler.supportsOptOutput);
     };
 
     Compiler.prototype.onOptionsChange = function (options) {

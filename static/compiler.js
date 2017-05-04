@@ -195,6 +195,7 @@ define(function (require) {
         this.eventHub.on('settingsChange', this.onSettingsChange, this);
         this.eventHub.on('themeChange', this.onThemeChange, this);
         this.eventHub.on('optViewClosed', this.onOptViewClosed, this);
+        this.eventHub.on('optViewOpened', this.onOptViewOpened, this);
         this.eventHub.emit('requestSettings');
         this.eventHub.emit('requestTheme');
         this.sendCompiler();
@@ -237,12 +238,7 @@ define(function (require) {
             this.optButton, createOptView.bind(this));
 
         this.optButton.click(_.bind(function () {
-            var currentOptions = this.optionsField.val();
-            if(currentOptions.indexOf(this.compiler.optArg) === -1) {
-                currentOptions += " " + this.compiler.optArg;
-                this.optionsField.val(currentOptions);
-                this.optionsField.change();
-            }
+            this.filters.set("optOutput", true);
             var insertPoint = hub.findParentRowOrColumn(this.container) ||
                 this.container.layoutManager.root.contentItems[0];
             insertPoint.addChild(createOptView());
@@ -487,9 +483,17 @@ define(function (require) {
 
     Compiler.prototype.onOptViewClosed = function (id) {
         if (this.id == id) {
+            this.filters.set("optOutput", false);
             this.optButton.prop("disabled", false);
         }
     };
+
+    Compiler.prototype.onOptViewOpened = function (id) {
+        if (this.id == id) {
+            this.optButton.prop("disabled", true);
+        }
+    };
+
 
     Compiler.prototype.updateButtons = function () {
         if (!this.compiler) return;

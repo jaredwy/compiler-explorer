@@ -87,6 +87,7 @@ define(function (require) {
               this.showOptResults(state.optOutput);
         }
         this.setTitle();
+        this.eventHub.emit("optViewOpened", this._compilerid);
     }
 
     // TODO: de-dupe with compiler etc
